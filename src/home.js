@@ -1,59 +1,109 @@
-import { Button } from "bootstrap";
-import React from "react";
-import { UseSelector, useDispatch, useSelector } from "react-redux";
-import { userList } from "./data";
+import React, { useState } from "react";
+import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { deleteUser } from "./userReducer";
+import Profile from "./logo192.png";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import Button from "react-bootstrap/Button";
+import Modal from "react-bootstrap/Modal";
 
 function Home() {
   const navigate = useNavigate();
   const users = useSelector((state) => state.users);
   const dispatch = useDispatch();
 
-  const handleDelete = (id) => {
-    dispatch(deleteUser({ id: id }));
+  const [show, setShow] = useState(false);
+  const [deleteId, setDeleteId] = useState(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const handleClose = () => setShow(false);
+
+  const handleDeletePokemon = (id) => {
+    setDeleteId(id);
+    setShow(true);
   };
 
+  const confirmDelete = () => {
+    dispatch(deleteUser({ id: deleteId }));
+    toast.error("Pokemon deleted successfully", {
+      position: "top-center",
+    });
+    setShow(false);
+  };
+
+  // Filter the users based on search query
+  const filteredUsers = users.filter((user) => {
+    const { id, name, breed } = user;
+    const lowerCaseQuery = searchQuery.toLowerCase();
+    return (
+      id.toLowerCase().includes(lowerCaseQuery) ||
+      name.toLowerCase().includes(lowerCaseQuery) ||
+      breed.toLowerCase().includes(lowerCaseQuery)
+    );
+  });
+
   return (
-    <div>
-      <div className="container">
-        <h2>Pokemon App </h2>
+    <div className="container mt-4 ">
+      <h2 className="text-center mb-4" style={{ color: "#ffffff" }}>
+        Welcome to the Pokemon App
+      </h2>
+      <div className="d-flex gap-5">
         <button
           onClick={() => navigate("./create")}
-          className="btn btn-success my-3"
+          className="btn btn-success mb-3"
         >
-          Crate +
+          Create +
         </button>
+        <div className="mb-3 w-25">
+          <input
+            type="text"
+            className="form-control"
+            placeholder="Search by ID, Name, or Breed"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+        </div>
+      </div>
 
-        <table className="table">
+      <div className="table-responsive">
+        <table className="table table-striped">
           <thead>
             <tr>
-              <th>ID</th>
-              <th>Name</th>
-              <th>Breed</th>
-              <th>Description</th>
-              {/* <th>Image</th> */}
+              <th scope="col">Image</th>
+              <th scope="col">ID</th>
+              <th scope="col">Name</th>
+              <th scope="col">Breed</th>
+              <th scope="col">Description</th>
+              <th scope="col">Actions</th>
             </tr>
           </thead>
 
           <tbody>
-            {users.map((user, index) => (
+            {filteredUsers.map((user, index) => (
               <tr key={index}>
+                <td>
+                  <img
+                    src={user.image || Profile}
+                    alt="pokemon image"
+                    className="img-thumbnail"
+                    style={{ maxWidth: "100px", maxHeight: "100px" }}
+                  />
+                </td>
                 <td>{user?.id}</td>
                 <td>{user?.name}</td>
                 <td>{user?.breed}</td>
-                <td>{user?.discription}</td>
-                {/* <td>{user?.image}</td> */}
+                <td>{user?.description}</td>
                 <td>
                   <button
-                    className="btn btn-sm btn-primary"
-                    onClick={(e) => navigate(`/edit/${user.id}`)}
+                    className="btn btn-sm btn-primary me-2"
+                    onClick={() => navigate(`/edit/${user.id}`)}
                   >
                     Edit
                   </button>
                   <button
-                    className="btn btn-sm btn-danger ms-2"
-                    onClick={(e) => handleDelete(user.id)}
+                    className="btn btn-sm btn-danger"
+                    onClick={() => handleDeletePokemon(user.id)}
                   >
                     Delete
                   </button>
@@ -63,6 +113,20 @@ function Home() {
           </tbody>
         </table>
       </div>
+      <Modal show={show} onHide={handleClose}>
+        <Modal.Header closeButton>
+          <Modal.Title>Delete Pokemon</Modal.Title>
+        </Modal.Header>
+        <Modal.Body>Are you sure you want to delete this Pokemon?</Modal.Body>
+        <Modal.Footer>
+          <Button variant="secondary" onClick={handleClose}>
+            Cancel
+          </Button>
+          <Button variant="danger" onClick={confirmDelete}>
+            Delete
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </div>
   );
 }

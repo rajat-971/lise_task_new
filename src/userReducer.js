@@ -8,12 +8,14 @@ const userSlice = createSlice({
       state.push(action.payload);
     },
     updateUser: (state, action) => {
-      const { id, name, breed, discription } = action.payload;
+      const { id, name, breed, description, image } = action.payload;
+
       const uu = state.find((user) => user.id == id);
       if (uu) {
         uu.name = name;
         uu.breed = breed;
-        uu.discription = discription;
+        uu.description = description;
+        uu.image = image;
       }
     },
     deleteUser: (state, action) => {

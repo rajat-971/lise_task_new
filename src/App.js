@@ -5,9 +5,11 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Home from "./home";
 import Create from "./create";
 import Update from "./update";
+import { ToastContainer } from "react-toastify";
 function App() {
   return (
     <div>
+      <ToastContainer />
       <BrowserRouter>
         <Routes>
           <Route path="/" element={<Home />}></Route>
